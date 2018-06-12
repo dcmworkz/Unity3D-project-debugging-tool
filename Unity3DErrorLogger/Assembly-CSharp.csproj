@@ -59,12 +59,12 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Assets\UGUIMenu.cs" />
-    <Reference Include="Unity.PackageManagerUI.Editor">
-      <HintPath>D:/__Unity/GitHub Projects/Unity3D-project-debugging-tool/Unity3DErrorLogger/Library/ScriptAssemblies/Unity.PackageManagerUI.Editor.dll</HintPath>
-    </Reference>
+    <Compile Include="Assets\button.cs" />
     <Reference Include="UnityEditor.StandardEvents">
       <HintPath>D:/__Unity/GitHub Projects/Unity3D-project-debugging-tool/Unity3DErrorLogger/Library/ScriptAssemblies/UnityEditor.StandardEvents.dll</HintPath>
+    </Reference>
+    <Reference Include="Unity.PackageManagerUI.Editor">
+      <HintPath>D:/__Unity/GitHub Projects/Unity3D-project-debugging-tool/Unity3DErrorLogger/Library/ScriptAssemblies/Unity.PackageManagerUI.Editor.dll</HintPath>
     </Reference>
     <Reference Include="UnityEngine.AIModule">
       <HintPath>C:/Program Files/Unity/Editor/Data/Managed/UnityEngine/UnityEngine.AIModule.dll</HintPath>
