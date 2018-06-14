@@ -1,20 +1,20 @@
 ﻿using UnityEngine;
 using System.Collections;
 
+// Contains UI styling options, and handles appropriately styling the elements
 [CreateAssetMenu(fileName = "DebuggingOptionsSO", menuName = "Lairinus/Debugging", order = 1)]
 public class DebuggingOptionsSO : ScriptableObject
 {
     /* Writing this long-ways -> classes don't behave well with ScriptableObjects when porting the project between different machines */
-
-    public Color errorLogBackgroundColor = new Color();
+    public Color errorLogIconColor = new Color();
     public Sprite errorLogIcon = null;
-    public Color warningLogBackgroundColor = new Color();
+    public Color warningLogIconColor = new Color();
     public Sprite warningLogIcon = null;
-    public Color logLogBackgroundColor = new Color();
+    public Color logLogIconColor = new Color();
     public Sprite logLogIcon = null;
-    public Color assertLogBackgroundColor = new Color();
+    public Color assertLogIconColor = new Color();
     public Sprite assertLogIcon = null;
-    public Color exceptionLogBackgroundColor = new Color();
+    public Color exceptionLogIconColor = new Color();
     public Sprite exceptionLogIcon = null;
 
     /// <summary>
@@ -31,35 +31,35 @@ public class DebuggingOptionsSO : ScriptableObject
         {
             case LogType.Error:
                 {
-                    item.backgroundImage.color = errorLogBackgroundColor;
+                    item.iconImage.color = errorLogIconColor;
                     item.iconImage.sprite = errorLogIcon;
                 }
                 break;
 
             case LogType.Warning:
                 {
-                    item.backgroundImage.color = warningLogBackgroundColor;
+                    item.iconImage.color = warningLogIconColor;
                     item.iconImage.sprite = warningLogIcon;
                 }
                 break;
 
             case LogType.Log:
                 {
-                    item.backgroundImage.color = logLogBackgroundColor;
+                    item.iconImage.color = logLogIconColor;
                     item.iconImage.sprite = logLogIcon;
                 }
                 break;
 
             case LogType.Assert:
                 {
-                    item.backgroundImage.color = assertLogBackgroundColor;
+                    item.iconImage.color = assertLogIconColor;
                     item.iconImage.sprite = assertLogIcon;
                 }
                 break;
 
             case LogType.Exception:
                 {
-                    item.backgroundImage.color = exceptionLogBackgroundColor;
+                    item.iconImage.color = exceptionLogIconColor;
                     item.iconImage.sprite = exceptionLogIcon;
                 }
                 break;
