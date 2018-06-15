@@ -62,6 +62,7 @@
     <Compile Include="Assets\Lairinus.Utility.Debugger\Elements\UIToggle.cs" />
     <Compile Include="Assets\Lairinus.Utility.Debugger\Scripts\DebuggingItem.cs" />
     <Compile Include="Assets\Lairinus.Utility.Debugger\Scripts\DebuggingOptionsSO.cs" />
+    <Compile Include="Assets\Lairinus.Utility.Debugger\Scripts\Test.cs" />
     <Compile Include="Assets\Lairinus.Utility.Debugger\Scripts\UIDebuggingConsoleTool.cs" />
     <Compile Include="Assets\Lairinus.Utility.Debugger\Scripts\UIDebuggingItem.cs" />
     <Reference Include="UnityEditor.StandardEvents">

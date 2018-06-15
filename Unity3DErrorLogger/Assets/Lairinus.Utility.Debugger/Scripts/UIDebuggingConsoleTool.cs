@@ -2,6 +2,7 @@
 using UnityEngine.UI;
 using System.Collections.Generic;
 using System;
+using System.Collections;
 
 public class UIDebuggingConsoleTool : MonoBehaviour
 {
@@ -17,7 +18,22 @@ public class UIDebuggingConsoleTool : MonoBehaviour
     [SerializeField] private UIDebuggingItem _uiDebuggingItemPrefab = null;
     [SerializeField] private Transform _uiDebuggingItemTransformParent = null;
     [SerializeField] private DebuggingOptionsSO debuggingOptions = null;
-    public static UIDebuggingConsoleTool instance { get; private set; }
+    private static UIDebuggingConsoleTool _instance { get; set; }
+
+    public static UIDebuggingConsoleTool GetInstance()
+    {
+        if (_instance == null)
+        {
+            _instance = Instantiate(Resources.Load("Lairinus.DebuggingConsole")) as UIDebuggingConsoleTool;
+            return _instance;
+        }
+        else return _instance;
+    }
+
+    public static void Initialize()
+    {
+        GetInstance();
+    }
 
     /// <summary>
     /// Adds a Log Item to the Debugging Console
@@ -27,18 +43,18 @@ public class UIDebuggingConsoleTool : MonoBehaviour
     /// <param name="type">Which Log Type is this item, based on Unity's defaults?</param>
     public void AddLogItem(string name, string stackTrace, LogType type)
     {
-        if (instance == null)
+        if (_instance == null)
             return;
 
         // Creates the Model and prepares it for use
         string key = name + stackTrace;
         DebuggingItem item = null;
-        if (instance._allDebuggingItems.ContainsKey(key))
-            item = instance._allDebuggingItems[key];
+        if (_instance._allDebuggingItems.ContainsKey(key))
+            item = _instance._allDebuggingItems[key];
         else
         {
             item = new DebuggingItem(name, stackTrace, type);
-            instance._allDebuggingItems.Add(key, item);
+            _instance._allDebuggingItems.Add(key, item);
         }
 
         item.lastOccurence = Time.realtimeSinceStartup;
@@ -58,24 +74,29 @@ public class UIDebuggingConsoleTool : MonoBehaviour
 
         debuggingOptions.SetDebuggingItem(uiDebuggingItem, type);
         uiDebuggingItem.titleText.text = item.name;
-        uiDebuggingItem.countText.text = item.count.ToString();
+        uiDebuggingItem.countText.text = "x " + item.count.ToString();
         uiDebuggingItem.backgroundButton.onClick.RemoveAllListeners();
         uiDebuggingItem.backgroundButton.onClick.AddListener(() => OnClick_ShowDebuggingItemLogDetails(item));
-    }
 
-    // Handles general Unity exceptions.
-    private void HandleException(string name, string stackTrace, LogType type)
-    {
-        if (instance == null)
-            return;
-
-        instance.AddLogItem(name, stackTrace, type);
+        if (_allDebuggingItems.Values.Count > 0)
+            _navigation.showLogButton.gameObject.SetActive(true);
+        else
+            _navigation.showLogButton.gameObject.SetActive(false);
     }
 
     private void Awake()
     {
         Application.logMessageReceived -= HandleException;
         Application.logMessageReceived += HandleException;
+    }
+
+    // Handles general Unity exceptions.
+    private void HandleException(string name, string stackTrace, LogType type)
+    {
+        if (_instance == null)
+            return;
+
+        _instance.AddLogItem(name, stackTrace, type);
     }
 
     // Prepares, and then closes the Debugging tool
@@ -100,6 +121,7 @@ public class UIDebuggingConsoleTool : MonoBehaviour
         {
             case mainPageKey:
                 {
+                    StopCoroutine("UpdateErrorLogDetailPage_Routine");
                     _navigation.mainPage.SetActive(true);
                     _navigation.optionsPage.SetActive(false);
                     _navigation.errorDetailsPage.SetActive(false);
@@ -108,6 +130,7 @@ public class UIDebuggingConsoleTool : MonoBehaviour
 
             case optionsPageKey:
                 {
+                    StopCoroutine("UpdateErrorLogDetailPage_Routine");
                     _navigation.mainPage.SetActive(false);
                     _navigation.optionsPage.SetActive(true);
                     _navigation.errorDetailsPage.SetActive(false);
@@ -116,6 +139,7 @@ public class UIDebuggingConsoleTool : MonoBehaviour
 
             case errorDetailsPageKey:
                 {
+                    StartCoroutine("UpdateErrorLogDetailPage_Routine");
                     _navigation.mainPage.SetActive(false);
                     _navigation.optionsPage.SetActive(false);
                     _navigation.errorDetailsPage.SetActive(true);
@@ -124,13 +148,24 @@ public class UIDebuggingConsoleTool : MonoBehaviour
         }
     }
 
+    private void OnDisable()
+    {
+        Application.logMessageReceived -= HandleException;
+    }
+
+    private void OnEnable()
+    {
+        Application.logMessageReceived -= HandleException;
+        Application.logMessageReceived += HandleException;
+    }
+
     private void Start()
     {
         // We only want a singleton
         DontDestroyOnLoad(gameObject);
-        if (instance != null && instance != this)
+        if (_instance != null && _instance != this)
             Destroy(gameObject);
-        instance = this;
+        _instance = this;
 
         try
         {
@@ -151,8 +186,6 @@ public class UIDebuggingConsoleTool : MonoBehaviour
     {
         try
         {
-            UpdateErrorDetailPage();
-            AddLogItem("New log item" + UnityEngine.Random.Range(0, 50).ToString(), "No stack trace...", (LogType)UnityEngine.Random.Range(0, 3));
             string str = "sdlkfj";
             float.Parse(str);
         }
@@ -163,14 +196,22 @@ public class UIDebuggingConsoleTool : MonoBehaviour
         }
     }
 
-    private void UpdateErrorDetailPage()
+    /// <summary>
+    /// Updates the Error Detail page as long as it is open.
+    /// </summary>
+    /// <returns></returns>
+    private IEnumerator UpdateErrorLogDetailPage_Routine()
     {
-        if (_currentlyViewedItem != null)
+        while (true)
         {
-            _errorDetailPage.nameText.text = _currentlyViewedItem.name;
-            _errorDetailPage.countText.text = _currentlyViewedItem.count.ToString();
-            _errorDetailPage.stackTraceText.text = _currentlyViewedItem.stacktrace;
-            _errorDetailPage.lastOccurenceText.text = "Time since play: " + _currentlyViewedItem.lastOccurence.ToString() + "\n" + "Actual Time: " + _currentlyViewedItem.lastOccurenceLocalTime;
+            yield return null;
+            if (_currentlyViewedItem != null)
+            {
+                _errorDetailPage.nameText.text = _currentlyViewedItem.name;
+                _errorDetailPage.countText.text = _currentlyViewedItem.count.ToString();
+                _errorDetailPage.stackTraceText.text = _currentlyViewedItem.stacktrace;
+                _errorDetailPage.lastOccurenceText.text = "Time since play: " + Mathf.Round(_currentlyViewedItem.lastOccurence) + "\n" + "Actual Time: " + _currentlyViewedItem.lastOccurenceLocalTime;
+            }
         }
     }
 
