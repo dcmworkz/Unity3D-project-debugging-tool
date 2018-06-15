@@ -58,14 +58,13 @@ public class UIDebuggingConsoleTool : MonoBehaviour
 
         debuggingOptions.SetDebuggingItem(uiDebuggingItem, type);
         uiDebuggingItem.titleText.text = item.name;
-        uiDebuggingItem.stacktraceText.text = item.stacktrace;
         uiDebuggingItem.countText.text = item.count.ToString();
         uiDebuggingItem.backgroundButton.onClick.RemoveAllListeners();
         uiDebuggingItem.backgroundButton.onClick.AddListener(() => OnClick_ShowDebuggingItemLogDetails(item));
     }
 
     // Handles general Unity exceptions.
-    private static void HandleException(string name, string stackTrace, LogType type)
+    private void HandleException(string name, string stackTrace, LogType type)
     {
         if (instance == null)
             return;

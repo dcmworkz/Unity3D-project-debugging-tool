@@ -7,7 +7,6 @@ public class UIDebuggingItem : MonoBehaviour
 {
     public Image iconImage = null;
     public Text titleText = null;
-    public Text stacktraceText = null;
     public Text countText = null;
     public Image backgroundImage = null;
     public Button backgroundButton = null;
