@@ -161,8 +161,9 @@ D:\__Unity\GitHub Projects\Unity3D-project-debugging-tool\Unity3DErrorLogger\Tem
 D:\__Unity\GitHub Projects\Unity3D-project-debugging-tool\Unity3DErrorLogger\Temp\bin\Debug\UnityEngine.GoogleAudioSpatializer.xml
 D:\__Unity\GitHub Projects\Unity3D-project-debugging-tool\Unity3DErrorLogger\Temp\bin\Debug\UnityEngine.HoloLens.xml
 D:\__Unity\GitHub Projects\Unity3D-project-debugging-tool\Unity3DErrorLogger\Temp\bin\Debug\UnityEngine.SpatialTracking.xml
-D:\__Unity\GitHub Projects\Unity3D-project-debugging-tool\Unity3DErrorLogger\obj\Debug\Assembly-CSharp.csprojResolveAssemblyReference.cache
 D:\__Unity\GitHub Projects\Unity3D-project-debugging-tool\Unity3DErrorLogger\obj\Debug\Assembly-CSharp.csproj.CoreCompileInputs.cache
 D:\__Unity\GitHub Projects\Unity3D-project-debugging-tool\Unity3DErrorLogger\obj\Debug\Assembly-CSharp.csproj.CopyComplete
 D:\__Unity\GitHub Projects\Unity3D-project-debugging-tool\Unity3DErrorLogger\obj\Debug\Assembly-CSharp.dll
 D:\__Unity\GitHub Projects\Unity3D-project-debugging-tool\Unity3DErrorLogger\obj\Debug\Assembly-CSharp.pdb
+D:\__Unity\GitHub Projects\Unity3D-project-debugging-tool\Unity3DErrorLogger\Temp\bin\Debug\UnityEngine.WebGLModule.dll
+D:\__Unity\GitHub Projects\Unity3D-project-debugging-tool\Unity3DErrorLogger\obj\Debug\Assembly-CSharp.csprojResolveAssemblyReference.cache

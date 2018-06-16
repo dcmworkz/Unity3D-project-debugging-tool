@@ -9,8 +9,15 @@ public class DebuggingItem
     public DebuggingItem(string _name, string _stackTrace, LogType _type)
     {
         name = _name;
-        stacktrace = _stackTrace;
+        if (_stackTrace == null)
+            _stackTrace = " ";
+
+        stacktrace = _stackTrace.Trim();
+        stacktrace = stacktrace.Replace("\n", "");
+        stacktrace = stacktrace.Replace("at ", "\n    at ");
+        stacktrace = stacktrace.Insert(0, _name);
         type = _type;
+        logTypeText = _type.ToString();
         DateTime dt = DateTime.Now;
         lastOccurenceLocalTime = dt.ToShortTimeString();
     }
@@ -22,4 +29,5 @@ public class DebuggingItem
     public string lastOccurenceLocalTime { get; set; }
     public int count { get; set; }
     public LogType type { get; set; }
+    public string logTypeText { get; private set; }
 }
