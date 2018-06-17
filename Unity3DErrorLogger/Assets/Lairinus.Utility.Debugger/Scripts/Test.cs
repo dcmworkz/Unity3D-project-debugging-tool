@@ -21,16 +21,16 @@ public class Test : MonoBehaviour
         {
             UIDebuggingConsoleTool.AddLogItem(ex.Message, ex.StackTrace, LogType.Exception);
         }
-
         try
         {
             string str = "sdlkfj";
-            float.Parse(str);
+            float f = float.Parse(str);
         }
         catch (System.Exception ex)
         {
-            // We don't care about catching any exceptions that occur inside here
             UIDebuggingConsoleTool.AddLogItem(ex.Message, ex.StackTrace, LogType.Exception);
         }
+
+        UIDebuggingConsoleTool.AddLogItem("Test Issue", "Woot", LogType.Log, this);
     }
 }

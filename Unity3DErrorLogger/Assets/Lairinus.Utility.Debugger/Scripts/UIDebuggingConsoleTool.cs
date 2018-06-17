@@ -3,24 +3,26 @@ using UnityEngine.UI;
 using System.Collections.Generic;
 using System;
 using System.Collections;
+using System.Linq;
 
 namespace Lairinus.Utility
 {
     public class UIDebuggingConsoleTool : MonoBehaviour
     {
-        private const string errorDetailsPageKey = "ErrorDetailsPage";
-        private const string mainPageKey = "MainPage";
-        private const string optionsPageKey = "OptionsPage";
-        private Dictionary<string, DebuggingItem> _allDebuggingItems = new Dictionary<string, DebuggingItem>();
-        private Dictionary<string, UIDebuggingItem> _allUIDebuggingItems = new Dictionary<string, UIDebuggingItem>();
+        private Dictionary<string, DebuggingItem> _allDebuggingModelItems = new Dictionary<string, DebuggingItem>();
+
+        private Dictionary<string, UIDebuggingItem> _allDebuggingViewItems = new Dictionary<string, UIDebuggingItem>();
 
         private string _currentlyShownPage = "";
 
         private DebuggingItem _currentlyViewedItem = null;
 
+        private List<UIDebuggingItem> _displayedUIDebuggingItems = new List<UIDebuggingItem>();
+
         [SerializeField] private ErrorDetailPageElements _errorDetailPage = new ErrorDetailPageElements();
 
         private bool _isInitialized = false;
+
         [SerializeField] private PageNavigation _navigation = new PageNavigation();
 
         [SerializeField] private Options _options = new Options();
@@ -34,7 +36,7 @@ namespace Lairinus.Utility
         /// <summary>
         /// Returns true if there is at least one debugging item that exists
         /// </summary>
-        public bool debuggingItemsExist { get { return _allDebuggingItems.Values.Count > 0; } }
+        public bool debuggingItemsExist { get { return _allDebuggingModelItems.Values.Count > 0; } }
 
         private static UIDebuggingConsoleTool _instance { get; set; }
 
@@ -83,6 +85,28 @@ namespace Lairinus.Utility
             ProcessAddLogItem_Internal(name, stackTrace, type);
         }
 
+        /// <summary>
+        /// By this point, all items are already in the _displayed list, so we just need to show/hide the items from there.
+        /// </summary>
+        private void HandleOnToggle_RecalculateShownValues_Intenral()
+        {
+            _displayedUIDebuggingItems.ForEach(x => x.gameObject.SetActive(false));
+
+            foreach (KeyValuePair<string, UIDebuggingItem> kvp in _allDebuggingViewItems)
+            {
+                _displayedUIDebuggingItems = new List<UIDebuggingItem>();
+                UIDebuggingItem item = kvp.Value;
+                if (item == null)
+                    continue;
+
+                // We only want to show the View object if the object is allowed to be shown.
+                if (_options.CanShowType(item.type))
+                    _displayedUIDebuggingItems.Add(item);
+            }
+
+            _displayedUIDebuggingItems.ForEach(x => x.gameObject.SetActive(true));
+        }
+
         private void InitializeInternal()
         {
             if (_instance != null && _instance != this)
@@ -96,17 +120,18 @@ namespace Lairinus.Utility
                     _isInitialized = true;
                     Application.logMessageReceived -= HandleException;
                     Application.logMessageReceived += HandleException;
-                    _navigation.showLogButton.onClick.AddListener(() => OnClick_ShowPage(mainPageKey));
-                    _navigation.showMainConsoleButton.onClick.AddListener(() => OnClick_ShowPage(mainPageKey));
-                    _navigation.showOptionsButton.onClick.AddListener(() => OnClick_ShowPage(optionsPageKey));
+                    _navigation.showLogButton.onClick.AddListener(() => OnClick_ShowPage(Strings.mainPageKey));
+                    _navigation.showMainConsoleButton.onClick.AddListener(() => OnClick_ShowPage(Strings.mainPageKey));
+                    _navigation.showOptionsButton.onClick.AddListener(() => OnClick_ShowPage(Strings.optionsPageKey));
                     _navigation.exitConsoleButton.onClick.AddListener(() => OnClick_Close());
-                    _navigation.backToMainFromLogButton.onClick.AddListener(() => OnClick_ShowPage(mainPageKey));
+                    _navigation.backToMainFromLogButton.onClick.AddListener(() => OnClick_ShowPage(Strings.mainPageKey));
+                    _options.AddEventListeners(() => HandleOnToggle_RecalculateShownValues_Intenral());
                 }
             }
             catch
             {
                 // Do nothing, because we can't do anything. The debugging tool has a user error.
-                Debug.LogError("Lairinus.Utility.DebuggingTool \n" + "Please re-create the Debugging Console prefab in your scene. Do NOT modify this or else the tool will not work!");
+                Debug.LogError(Strings.Error_PackageIssue);
             }
         }
 
@@ -121,7 +146,7 @@ namespace Lairinus.Utility
         private void OnClick_ShowDebuggingItemLogDetails(DebuggingItem item)
         {
             _currentlyViewedItem = item;
-            OnClick_ShowPage(errorDetailsPageKey);
+            OnClick_ShowPage(Strings.errorDetailsPageKey);
         }
 
         // Prepares and then shows the page
@@ -130,27 +155,27 @@ namespace Lairinus.Utility
             _currentlyShownPage = pageName;
             switch (pageName)
             {
-                case mainPageKey:
+                case Strings.mainPageKey:
                     {
-                        StopCoroutine("UpdateErrorLogDetailPage_Routine");
+                        StopCoroutine(Strings.updateErrorLogRoutine);
                         _navigation.mainPage.SetActive(true);
                         _navigation.optionsPage.SetActive(false);
                         _navigation.errorDetailsPage.SetActive(false);
                     }
                     break;
 
-                case optionsPageKey:
+                case Strings.optionsPageKey:
                     {
-                        StopCoroutine("UpdateErrorLogDetailPage_Routine");
+                        StopCoroutine(Strings.updateErrorLogRoutine);
                         _navigation.mainPage.SetActive(false);
                         _navigation.optionsPage.SetActive(true);
                         _navigation.errorDetailsPage.SetActive(false);
                     }
                     break;
 
-                case errorDetailsPageKey:
+                case Strings.errorDetailsPageKey:
                     {
-                        StartCoroutine("UpdateErrorLogDetailPage_Routine");
+                        StartCoroutine(Strings.updateErrorLogRoutine);
                         _navigation.mainPage.SetActive(false);
                         _navigation.optionsPage.SetActive(false);
                         _navigation.errorDetailsPage.SetActive(true);
@@ -181,12 +206,12 @@ namespace Lairinus.Utility
             // Creates the Model and prepares it for use
             string key = name + stackTrace;
             DebuggingItem item = null;
-            if (_instance._allDebuggingItems.ContainsKey(key))
-                item = _instance._allDebuggingItems[key];
+            if (_instance._allDebuggingModelItems.ContainsKey(key))
+                item = _instance._allDebuggingModelItems[key];
             else
             {
                 item = new DebuggingItem(name, stackTrace, type);
-                _instance._allDebuggingItems.Add(key, item);
+                _instance._allDebuggingModelItems.Add(key, item);
             }
 
             item.lastOccurence = Time.realtimeSinceStartup;
@@ -195,22 +220,32 @@ namespace Lairinus.Utility
 
             // Creates the View (if needed) and applies the model to it
             UIDebuggingItem uiDebuggingItem = null;
-            if (_instance._allUIDebuggingItems.ContainsKey(key))
-                uiDebuggingItem = _instance._allUIDebuggingItems[key];
+            if (_instance._allDebuggingViewItems.ContainsKey(key))
+                uiDebuggingItem = _instance._allDebuggingViewItems[key];
             else
             {
                 uiDebuggingItem = Instantiate(_instance._uiDebuggingItemPrefab, _instance._uiDebuggingItemTransformParent);
-                uiDebuggingItem.gameObject.SetActive(true);
-                _instance._allUIDebuggingItems.Add(key, uiDebuggingItem);
+                _instance._allDebuggingViewItems.Add(key, uiDebuggingItem);
             }
 
             _instance._styleSO.SetDebuggingItem(uiDebuggingItem, type);
             uiDebuggingItem.titleText.text = item.name;
-            uiDebuggingItem.countText.text = "x " + item.count.ToString();
+            uiDebuggingItem.countText.text = Strings.quantitySeparator + item.count.ToString();
             uiDebuggingItem.backgroundButton.onClick.RemoveAllListeners();
+            uiDebuggingItem.type = item.type;
             uiDebuggingItem.backgroundButton.onClick.AddListener(() => _instance.OnClick_ShowDebuggingItemLogDetails(item));
 
-            if (_instance._allDebuggingItems.Values.Count > 0)
+            // Show or hide the View item based on whether or not the type can be shown
+            if (_options.CanShowType(item.type))
+                uiDebuggingItem.gameObject.SetActive(true);
+            else
+                uiDebuggingItem.gameObject.SetActive(false);
+
+            // Add the item to the "Displayed items" list.
+            _displayedUIDebuggingItems = _allDebuggingViewItems.Values.ToList();
+
+            // Show the 'Show Log' button if applicable
+            if (_instance._allDebuggingModelItems.Values.Count > 0)
                 _instance._navigation.showLogButton.gameObject.SetActive(true);
             else
                 _instance._navigation.showLogButton.gameObject.SetActive(false);
@@ -252,6 +287,9 @@ namespace Lairinus.Utility
             public Text typeText = null;
         }
 
+        /// <summary>
+        /// Utility used to help with how the items display on the Main page of the tool
+        /// </summary>
         [System.Serializable]
         public class Options
         {
@@ -265,6 +303,63 @@ namespace Lairinus.Utility
             public bool showExceptions { get { return _showExceptionsToggle.isOn; } }
             public bool showLogs { get { return _showLogsToggle.isOn; ; } }
             public bool showWarnings { get { return _showWarningsToggle.isOn; } }
+
+            public void AddEventListeners(Action action)
+            {
+                _showAssertionsToggle.onToggle = action;
+                _showErrorsToggle.onToggle = action;
+                _showExceptionsToggle.onToggle = action;
+                _showLogsToggle.onToggle = action;
+                _showWarningsToggle.onToggle = action;
+            }
+
+            /// <summary>
+            /// Returns true if we are able to determine the Debugging Item's type
+            /// </summary>
+            /// <param name="type"></param>
+            /// <returns></returns>
+            public bool CanShowType(LogType type)
+            {
+                switch (type)
+                {
+                    case LogType.Assert:
+                        {
+                            if (!showAssertions)
+                                return false;
+                        }
+                        break;
+
+                    case LogType.Error:
+                        {
+                            if (!showErrors)
+                                return false;
+                        }
+                        break;
+
+                    case LogType.Exception:
+                        {
+                            if (!showExceptions)
+                                return false;
+                        }
+                        break;
+
+                    case LogType.Log:
+                        {
+                            if (!showLogs)
+                                return false;
+                        }
+                        break;
+
+                    case LogType.Warning:
+                        {
+                            if (!showWarnings)
+                                return false;
+                        }
+                        break;
+                }
+
+                return true;
+            }
         }
 
         // Contains everything relating to navigation in this tool
@@ -279,6 +374,16 @@ namespace Lairinus.Utility
             public Button showLogButton = null;
             public Button showMainConsoleButton = null;
             public Button showOptionsButton = null;
+        }
+
+        private class Strings
+        {
+            public const string errorDetailsPageKey = "ErrorDetailsPage";
+            public const string mainPageKey = "MainPage";
+            public const string optionsPageKey = "OptionsPage";
+            public const string Error_PackageIssue = "Lairinus.Utility.DebuggingTool \n" + "Please re-download this package as soemthing went seriously wrong. In the future, please do not modify the DebuggingTool prefab...";
+            public const string quantitySeparator = "x";
+            public const string updateErrorLogRoutine = "UpdateErrorLogDetailPage_Routine";
         }
     }
 }

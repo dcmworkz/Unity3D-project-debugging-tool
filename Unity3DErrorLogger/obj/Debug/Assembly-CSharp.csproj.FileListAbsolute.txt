@@ -165,5 +165,4 @@ D:\__Unity\GitHub Projects\Unity3D-project-debugging-tool\Unity3DErrorLogger\obj
 D:\__Unity\GitHub Projects\Unity3D-project-debugging-tool\Unity3DErrorLogger\obj\Debug\Assembly-CSharp.csproj.CopyComplete
 D:\__Unity\GitHub Projects\Unity3D-project-debugging-tool\Unity3DErrorLogger\obj\Debug\Assembly-CSharp.dll
 D:\__Unity\GitHub Projects\Unity3D-project-debugging-tool\Unity3DErrorLogger\obj\Debug\Assembly-CSharp.pdb
-D:\__Unity\GitHub Projects\Unity3D-project-debugging-tool\Unity3DErrorLogger\Temp\bin\Debug\UnityEngine.WebGLModule.dll
 D:\__Unity\GitHub Projects\Unity3D-project-debugging-tool\Unity3DErrorLogger\obj\Debug\Assembly-CSharp.csprojResolveAssemblyReference.cache
