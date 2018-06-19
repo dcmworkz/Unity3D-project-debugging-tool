@@ -3,31 +3,61 @@ using System.Collections.Generic;
 using UnityEngine;
 using System;
 
-// Debugging Item -> A single TYPE of issue occurs. There may be many of the same type of issues within this element.
+/// <summary>
+/// Contains all of the data for a single type of issue.
+/// </summary>
 public class DebuggingItem
 {
     public DebuggingItem(string _name, string _stackTrace, LogType _type)
     {
         name = _name;
-        if (_stackTrace == null)
+        if (_stackTrace == null || _stackTrace == "")
             _stackTrace = " ";
 
-        stacktrace = _stackTrace.Trim();
-        stacktrace = stacktrace.Replace("\n", "");
-        stacktrace = stacktrace.Replace("at ", "\n    at ");
-        stacktrace = stacktrace.Insert(0, _name);
+        stacktrace = _stackTrace;
         type = _type;
         logTypeText = _type.ToString();
-        DateTime dt = DateTime.Now;
-        lastOccurenceLocalTime = dt.ToShortTimeString();
+        DateTime currentDateTime = DateTime.Now;
+        lastOccurenceLocalTime = currentDateTime.ToShortTimeString();
     }
 
-    public string key { get { return name + stacktrace; } }
-    public string name { get; private set; }
-    public string stacktrace { get; private set; }
-    public float lastOccurence { get; set; }
-    public string lastOccurenceLocalTime { get; set; }
+    /// <summary>
+    /// How many of this type of Debugging Item occurred.
+    /// </summary>
     public int count { get; set; }
-    public LogType type { get; set; }
+
+    /// <summary>
+    /// The unique identifier for this type of Debugging Item
+    /// </summary>
+    public string key { get { return name + stacktrace; } }
+
+    /// <summary>
+    /// The last period in time that this Debugging Item occurred, in seconds since the game has been playing. This directly corresponds with Time.realtimeSinceStartup.
+    /// </summary>
+    public float lastOccurence { get; set; }
+
+    /// <summary>
+    /// The last period in time that this Debugging Item occured, in realtime based on your device.
+    /// </summary>
+    public string lastOccurenceLocalTime { get; set; }
+
+    /// <summary>
+    /// String repesentation of the UnityEngine.LogType items.
+    /// </summary>
     public string logTypeText { get; private set; }
+
+    /// <summary>
+    /// The title of the event.
+    /// </summary>
+    public string name { get; private set; }
+
+    /// <summary>
+    /// Where this event took place
+    /// </summary>
+    public string stacktrace { get; private set; }
+
+    /// <summary>
+    /// The enum representation of the type of internal Unity3D issue, or the type of the custom issue, as defined by the user.
+    /// </summary>
+    public LogType type { get; set; }
 }

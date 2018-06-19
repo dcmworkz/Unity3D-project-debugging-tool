@@ -11,13 +11,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3e2e27aaadbf7ec4cacc93a6bc671e10, type: 3}
   m_Name: DebuggingOptionsSO
   m_EditorClassIdentifier: 
-  errorLogIconColor: {r: 0.7075472, g: 0.030037368, b: 0.4849553, a: 1}
+  errorLogIconColor: {r: 0.9098039, g: 0.28235295, b: 0.33333334, a: 1}
   errorLogIcon: {fileID: 21300000, guid: 6812a42cec668af4598d650b8b217e3f, type: 3}
-  warningLogIconColor: {r: 0.5849056, g: 0.5695134, b: 0, a: 1}
+  warningLogIconColor: {r: 0.96862745, g: 1, b: 0.34509805, a: 1}
   warningLogIcon: {fileID: 21300000, guid: e336fd9b2b86de54689250f57285a159, type: 3}
-  logLogIconColor: {r: 0, g: 0.7038085, b: 0.8584906, a: 1}
+  logLogIconColor: {r: 0.19215687, g: 0.52156866, b: 0.9882353, a: 1}
   logLogIcon: {fileID: 21300000, guid: a3113416285e25043b9700630dcd5e25, type: 3}
-  assertLogIconColor: {r: 0.4528302, g: 0.29757413, b: 0, a: 1}
+  assertLogIconColor: {r: 0.2627451, g: 0.39215687, b: 0.21176471, a: 1}
   assertLogIcon: {fileID: 21300000, guid: 69b291a9eb5ec3a43a243e851d6e892b, type: 3}
-  exceptionLogIconColor: {r: 0.6226415, g: 0, b: 0.17092127, a: 1}
+  exceptionLogIconColor: {r: 0.5529412, g: 0.41568628, b: 0.62352943, a: 1}
   exceptionLogIcon: {fileID: 21300000, guid: 9f8a1a8e110d2ec468b56e102aec5677, type: 3}

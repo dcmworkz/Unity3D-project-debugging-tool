@@ -9,34 +9,44 @@ namespace Lairinus.Utility
 {
     public class UIDebuggingConsoleTool : MonoBehaviour
     {
-        private Dictionary<string, DebuggingItem> _allDebuggingModelItems = new Dictionary<string, DebuggingItem>();
+        private Dictionary<string, DebuggingItem> _allDebuggingModelItems = new Dictionary<string, DebuggingItem>(); // The actual data for the Debugging Items
 
-        private Dictionary<string, UIDebuggingItem> _allDebuggingViewItems = new Dictionary<string, UIDebuggingItem>();
+        private Dictionary<string, UIDebuggingItem> _allDebuggingViewItems = new Dictionary<string, UIDebuggingItem>(); // The UI representation of the Debugging Items
 
-        private string _currentlyShownPage = "";
+        private string _currentlyShownPageKey = ""; // The page that is being shown
 
-        private DebuggingItem _currentlyViewedItem = null;
+        private DebuggingItem _currentlyViewedItem = null; // The DebuggingItem that is currently being inspected
 
-        private List<UIDebuggingItem> _displayedUIDebuggingItems = new List<UIDebuggingItem>();
+        private List<UIDebuggingItem> _displayedUIDebuggingItems = new List<UIDebuggingItem>(); // The UIDebuggingItems that are currently being shown. This list is adjusted to fit the current filters
 
-        [SerializeField] private ErrorDetailPageElements _errorDetailPage = new ErrorDetailPageElements();
+        [SerializeField] private ErrorDetailPageElements _errorDetailPage = new ErrorDetailPageElements(); // Internal use only
 
-        private bool _isInitialized = false;
+        private bool _isInitialized = false; // Internal use only
 
-        [SerializeField] private PageNavigation _navigation = new PageNavigation();
+        [SerializeField] private PageNavigation _navigation = new PageNavigation(); // Internal use only
 
-        [SerializeField] private Options _options = new Options();
+        [SerializeField] private Options _options = new Options(); // Internal use only
 
-        [SerializeField] private DebuggingOptionsSO _styleSO = null;
+        [SerializeField] private DebuggingOptionsSO _styleSO = null; // Internal use only
 
-        [SerializeField] private UIDebuggingItem _uiDebuggingItemPrefab = null;
+        [SerializeField] private UIDebuggingItem _uiDebuggingItemPrefab = null; // Internal use only
 
-        [SerializeField] private Transform _uiDebuggingItemTransformParent = null;
+        [SerializeField] private Transform _uiDebuggingItemTransformParent = null; // Internal use only
+
+        [SerializeField] private bool _alwaysShowLogButton = false;
 
         /// <summary>
-        /// Returns true if there is at least one debugging item that exists
+        /// Returns true if there is at least one DebuggingItem that exists. This does not adjust for the current filters
         /// </summary>
         public bool debuggingItemsExist { get { return _allDebuggingModelItems.Values.Count > 0; } }
+
+        /// <summary>
+        /// Returns true if there is at least one DebuggingItem shown. This is adjusted for the visibility filters
+        /// </summary>
+        public bool filteredDebuggingItemsExist
+        {
+            get { return _displayedUIDebuggingItems.Count > 0; }
+        }
 
         private static UIDebuggingConsoleTool _instance { get; set; }
 
@@ -61,6 +71,34 @@ namespace Lairinus.Utility
                 _instance.ProcessAddLogItem_Internal(name, stackTrace, type);
         }
 
+        /// <summary>
+        /// Initializes the Debugging Log. A MonoBehaviour component is required to process a Coroutine. If this is not possible, then drag the Lairinus.DebuggingConsoleUI tool into the scene and you won't have to use this method :)
+        /// </summary>
+        /// <param name="callingObject"></param>
+        public static void Initialize(MonoBehaviour callingObject)
+        {
+            if (callingObject == null)
+            {
+                Debug.LogError(Strings.Error_RequireMonobehaviour);
+                return;
+            }
+            callingObject.StartCoroutine(InitRoutine());
+        }
+
+        private static IEnumerator InitRoutine()
+        {
+            _instance = GetInstanceInternal();
+            yield return null;
+            _instance.InitializeInternal();
+        }
+
+        /// <summary>
+        /// Internal use only. Provides a timeout between adding a DebuggingItem and creating a new instance of the class if it doesn't exist in the scene
+        /// </summary>
+        /// <param name="name"></param>
+        /// <param name="stackTrace"></param>
+        /// <param name="type"></param>
+        /// <returns></returns>
         private static IEnumerator AddIssueItemRoutine(string name, string stackTrace, LogType type)
         {
             _instance = GetInstanceInternal();
@@ -73,13 +111,18 @@ namespace Lairinus.Utility
         {
             if (_instance == null)
             {
-                _instance = Instantiate(Resources.Load("Lairinus.DebuggingConsole")) as UIDebuggingConsoleTool;
+                _instance = Instantiate(Resources.Load(Strings.debuggingToolPrefabName)) as UIDebuggingConsoleTool;
                 return _instance;
             }
             else return _instance;
         }
 
-        // Handles general Unity exceptions.
+        /// <summary>
+        /// Internal use only. Attaches to Unity's event handler and catches any errors that Unity encounters
+        /// </summary>
+        /// <param name="name"></param>
+        /// <param name="stackTrace"></param>
+        /// <param name="type"></param>
         private void HandleException(string name, string stackTrace, LogType type)
         {
             ProcessAddLogItem_Internal(name, stackTrace, type);
@@ -107,6 +150,24 @@ namespace Lairinus.Utility
             _displayedUIDebuggingItems.ForEach(x => x.gameObject.SetActive(true));
         }
 
+        /// <summary>
+        /// Manually shows the DebuggingLog tool
+        /// </summary>
+        public static void Show()
+        {
+            if (_instance == null)
+            {
+                Debug.LogError(Strings.Error_InitializeBeforeUse);
+                _instance = GetInstanceInternal();
+                return;
+            }
+
+            _instance.OnClick_ShowPage(Strings.mainPageKey);
+        }
+
+        /// <summary>
+        /// Internal use only
+        /// </summary>
         private void InitializeInternal()
         {
             if (_instance != null && _instance != this)
@@ -120,12 +181,24 @@ namespace Lairinus.Utility
                     _isInitialized = true;
                     Application.logMessageReceived -= HandleException;
                     Application.logMessageReceived += HandleException;
-                    _navigation.showLogButton.onClick.AddListener(() => OnClick_ShowPage(Strings.mainPageKey));
-                    _navigation.showMainConsoleButton.onClick.AddListener(() => OnClick_ShowPage(Strings.mainPageKey));
-                    _navigation.showOptionsButton.onClick.AddListener(() => OnClick_ShowPage(Strings.optionsPageKey));
-                    _navigation.exitConsoleButton.onClick.AddListener(() => OnClick_Close());
-                    _navigation.backToMainFromLogButton.onClick.AddListener(() => OnClick_ShowPage(Strings.mainPageKey));
-                    _options.AddEventListeners(() => HandleOnToggle_RecalculateShownValues_Intenral());
+
+                    if (_navigation.showLogButton != null)
+                        _navigation.showLogButton.onClick.AddListener(() => OnClick_ShowPage(Strings.mainPageKey));
+
+                    if (_navigation.showMainConsoleButton != null)
+                        _navigation.showMainConsoleButton.onClick.AddListener(() => OnClick_ShowPage(Strings.mainPageKey));
+
+                    if (_navigation.showOptionsButton != null)
+                        _navigation.showOptionsButton.onClick.AddListener(() => OnClick_ShowPage(Strings.optionsPageKey));
+
+                    if (_navigation.exitConsoleButton != null)
+                        _navigation.exitConsoleButton.onClick.AddListener(() => Close());
+
+                    if (_navigation.backToMainFromLogButton != null)
+                        _navigation.backToMainFromLogButton.onClick.AddListener(() => OnClick_ShowPage(Strings.mainPageKey));
+
+                    if (_options != null)
+                        _options.AddEventListeners(() => HandleOnToggle_RecalculateShownValues_Intenral());
                 }
             }
             catch
@@ -135,14 +208,20 @@ namespace Lairinus.Utility
             }
         }
 
-        // Prepares, and then closes the Debugging tool
-        private void OnClick_Close()
+        /// <summary>
+        /// Internal use only. Internally closes the Debugging tool
+        /// </summary>
+        public void Close()
         {
             _navigation.mainPage.SetActive(false);
             _navigation.optionsPage.SetActive(false);
             _navigation.errorDetailsPage.SetActive(false);
         }
 
+        /// <summary>
+        /// Shows the details for a DebuggingItem once it is clicked
+        /// </summary>
+        /// <param name="item"></param>
         private void OnClick_ShowDebuggingItemLogDetails(DebuggingItem item)
         {
             _currentlyViewedItem = item;
@@ -152,7 +231,13 @@ namespace Lairinus.Utility
         // Prepares and then shows the page
         private void OnClick_ShowPage(string pageName)
         {
-            _currentlyShownPage = pageName;
+            if (_instance == null)
+            {
+                _instance = GetInstanceInternal();
+                return;
+            }
+
+            _currentlyShownPageKey = pageName;
             switch (pageName)
             {
                 case Strings.mainPageKey:
@@ -184,11 +269,17 @@ namespace Lairinus.Utility
             }
         }
 
+        /// <summary>
+        /// Internal use only. While inactive, this object does not catch errors
+        /// </summary>
         private void OnDisable()
         {
             Application.logMessageReceived -= HandleException;
         }
 
+        /// <summary>
+        /// Internal use only. While active, this object catches all errors in Unity3D
+        /// </summary>
         private void OnEnable()
         {
             Application.logMessageReceived -= HandleException;
@@ -196,7 +287,7 @@ namespace Lairinus.Utility
         }
 
         /// <summary>
-        /// Processes adding the item after we're sure we have a Singleton to use. Internal use only.
+        /// Internal use only. Processes adding the item after we're sure we have a Singleton to use. Internal use only.
         /// </summary>
         /// <param name="name"></param>
         /// <param name="stackTrace"></param>
@@ -228,7 +319,7 @@ namespace Lairinus.Utility
                 _instance._allDebuggingViewItems.Add(key, uiDebuggingItem);
             }
 
-            _instance._styleSO.SetDebuggingItem(uiDebuggingItem, type);
+            _instance._styleSO.SetUIDebuggingItemStyle(uiDebuggingItem, type);
             uiDebuggingItem.titleText.text = item.name;
             uiDebuggingItem.countText.text = Strings.quantitySeparator + item.count.ToString();
             uiDebuggingItem.backgroundButton.onClick.RemoveAllListeners();
@@ -245,12 +336,15 @@ namespace Lairinus.Utility
             _displayedUIDebuggingItems = _allDebuggingViewItems.Values.ToList();
 
             // Show the 'Show Log' button if applicable
-            if (_instance._allDebuggingModelItems.Values.Count > 0)
+            if (_instance._allDebuggingModelItems.Values.Count > 0 || _alwaysShowLogButton)
                 _instance._navigation.showLogButton.gameObject.SetActive(true);
             else
                 _instance._navigation.showLogButton.gameObject.SetActive(false);
         }
 
+        /// <summary>
+        /// Internal use only. Unity3D's "Start" is like a class constructor
+        /// </summary>
         private void Start()
         {
             InitializeInternal();
@@ -362,7 +456,9 @@ namespace Lairinus.Utility
             }
         }
 
-        // Contains everything relating to navigation in this tool
+        /// <summary>
+        /// Contains all elements that handle navigation in this tool
+        /// </summary>
         [System.Serializable]
         public class PageNavigation
         {
@@ -376,14 +472,20 @@ namespace Lairinus.Utility
             public Button showOptionsButton = null;
         }
 
-        private class Strings
+        /// <summary>
+        /// Contains many of the strings in this tool
+        /// </summary>
+        private static class Strings
         {
+            public const string debuggingToolPrefabName = "Lairinus.DebuggingConsole";
+            public const string Error_PackageIssue = "Lairinus.Utility.DebuggingTool \n" + "Please re-download this package as soemthing went seriously wrong. In the future, please do not modify the DebuggingTool prefab...";
             public const string errorDetailsPageKey = "ErrorDetailsPage";
             public const string mainPageKey = "MainPage";
             public const string optionsPageKey = "OptionsPage";
-            public const string Error_PackageIssue = "Lairinus.Utility.DebuggingTool \n" + "Please re-download this package as soemthing went seriously wrong. In the future, please do not modify the DebuggingTool prefab...";
             public const string quantitySeparator = "x";
             public const string updateErrorLogRoutine = "UpdateErrorLogDetailPage_Routine";
+            public const string Error_InitializeBeforeUse = "Error: UIDebuggingConsoleTool\nPlease initialize the tool by calling UIDebuggingConsoleTool.Initialize() before attempting to show any messages. Alternatively, the Lairinus.UIDebuggingTool prefab can be dragged in the scene.";
+            public const string Error_RequireMonobehaviour = "Error: Lairinus.Utility.UIDebuggingConsoleTool\n You need to provide a valid MonoBehaviour object in order to initialize the UIDebuggingConsoleTool object. Any MonoBehaviour object can be used!";
         }
     }
 }

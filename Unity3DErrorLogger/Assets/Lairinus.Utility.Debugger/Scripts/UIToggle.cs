@@ -5,7 +5,7 @@ using UnityEngine.UI;
 using UnityEngine.EventSystems;
 using System;
 
-// In 2018 it's STILL not possible to adjust a Unity3D Toggle's 'On' state without custom code :(
+// In 2018 it's STILL not possible to adjust a Unity3D Toggle's 'On' state without custom code... so we have to make the functionality ourselves! :)
 [RequireComponent(typeof(Image))]
 public class UIToggle : MonoBehaviour, IPointerClickHandler
 {
