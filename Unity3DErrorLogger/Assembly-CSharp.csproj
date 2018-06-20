@@ -59,11 +59,11 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Assets\Lairinus.Utility.Debugger\Scripts\DebuggingItem.cs" />
-    <Compile Include="Assets\Lairinus.Utility.Debugger\Scripts\DebuggingOptionsSO.cs" />
-    <Compile Include="Assets\Lairinus.Utility.Debugger\Scripts\Test.cs" />
-    <Compile Include="Assets\Lairinus.Utility.Debugger\Scripts\UIDebuggingConsoleTool.cs" />
-    <Compile Include="Assets\Lairinus.Utility.Debugger\Scripts\UIDebuggingItem.cs" />
+    <Compile Include="Assets\Lairinus.Utility.Debugger\Demo\DemoScene.cs" />
+    <Compile Include="Assets\Lairinus.Utility.Debugger\Scripts\ProjectDebuggingItemModel.cs" />
+    <Compile Include="Assets\Lairinus.Utility.Debugger\Scripts\ProjectDebuggingItemView.cs" />
+    <Compile Include="Assets\Lairinus.Utility.Debugger\Scripts\ProjectDebuggingStyle_ScriptableObject.cs" />
+    <Compile Include="Assets\Lairinus.Utility.Debugger\Scripts\ProjectDebuggingTool.cs" />
     <Compile Include="Assets\Lairinus.Utility.Debugger\Scripts\UIToggle.cs" />
     <Reference Include="UnityEditor.StandardEvents">
       <HintPath>D:/__Unity/GitHub Projects/Unity3D-project-debugging-tool/Unity3DErrorLogger/Library/ScriptAssemblies/UnityEditor.StandardEvents.dll</HintPath>
