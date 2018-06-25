@@ -1,4 +1,4 @@
-# Unity3D-project-debugging-tool
-Allows debugging Unity3D applications at runtime
+# Project Debugging tool (Unity3D)
+### Allows debugging Unity3D applications at runtime. The tool catches all errors thrown by Unity3D, and you can even define a few of your own!
 
-Read all about this project on my website: http://lairinus.com/project/project-debugging-tool/
+Please visit http://lairinus.com/project/project-debugging-tool/ for more information
